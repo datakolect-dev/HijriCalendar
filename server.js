@@ -11,21 +11,19 @@ const PORT = process.env.PORT || 3000;
 const USERS_FILE = "./storage/users.json";
 
 
-function normalizeText(text){
+function normalizeText(text) {
     
     return text
-        .replace(/Ṣ/g,"S")
-        .replace(/ṣ/g,"s")
-        .replace(/Ḍ/g,"D")
-        .replace(/ḍ/g,"d")
-        .replace(/Ṭ/g,"T")
-        .replace(/ṭ/g,"t")
-        .replace(/Ẓ/g,"Z")
-        .replace(/ẓ/g,"z")
-        .replace(/Ḥ/g,"H")
-        .replace(/ḥ/g,"h")
-        .replace(/ʿ/g,"")
-        .replace(/ʾ/g,""); 
+    // Supprime les accents Unicode
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    
+    // Lettres arabes translittérées particulières
+    .replace(/ʿ/g, "")
+    .replace(/ʾ/g, "") 
+    
+    // Nettoyage final
+    .replace(/[^\x00-\x7F]/g, "");
 }
 
 // Accueil
@@ -107,13 +105,13 @@ app.get("/hijri", async (req,res)=>{
                 {
                     icon:"18433",
                     text:
-                    `${hijri.day} ${hijri.month.en} AH`
+                    `${hijri.day} ${hijri.month.en}`
                 },
 
                 {
                     icon:"18433",
                     text:
-                    `n${hijri.year} AH`
+                    `${hijri.year}`
                 }
 
             ]
