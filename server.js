@@ -11,6 +11,23 @@ const PORT = process.env.PORT || 3000;
 const USERS_FILE = "./storage/users.json";
 
 
+function normalizeText(text){
+    
+    return text
+        .replace(/Ṣ/g,"S")
+        .replace(/ṣ/g,"s")
+        .replace(/Ḍ/g,"D")
+        .replace(/ḍ/g,"d")
+        .replace(/Ṭ/g,"T")
+        .replace(/ṭ/g,"t")
+        .replace(/Ẓ/g,"Z")
+        .replace(/ẓ/g,"z")
+        .replace(/Ḥ/g,"H")
+        .replace(/ḥ/g,"h")
+        .replace(/ʿ/g,"")
+        .replace(/ʾ/g,""); 
+}
+
 // Accueil
 app.get("/", (req, res) => {
 
@@ -78,6 +95,10 @@ app.get("/hijri", async (req,res)=>{
 
         const hijri = response.data.data.hijri;
 
+        const month = normalizeText (
+            hijri.month.en
+        );
+
 
         res.json({
 
@@ -86,7 +107,13 @@ app.get("/hijri", async (req,res)=>{
                 {
                     icon:"18433",
                     text:
-                    `${hijri.day} ${hijri.month.en}\n${hijri.year} AH`
+                    `${hijri.day} ${hijri.month.en} AH`
+                },
+
+                {
+                    icon:"18433",
+                    text:
+                    `n${hijri.year} AH`
                 }
 
             ]
