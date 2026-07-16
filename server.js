@@ -1,72 +1,105 @@
 import express from "express";
 import axios from "axios";
 import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
+
 
 const app = express();
 
 app.use(express.json());
+
+
+// Permet de servir manifest.json
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+app.use(express.static(__dirname));
+
 
 const PORT = process.env.PORT || 3000;
 
 const USERS_FILE = "./storage/users.json";
 
 
+
+/*
+    Nettoyage des caractères incompatibles LaMetric
+*/
+
 function normalizeText(text) {
-    
+
     return text
-    // Supprime les accents Unicode
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    
-    // Lettres arabes translittérées particulières
-    .replace(/ʿ/g, "")
-    .replace(/ʾ/g, "") 
-    
-    // Nettoyage final
-    .replace(/[^\x00-\x7F]/g, "");
+        .normalize("NFD")
+
+        // Supprime tous les accents Unicode
+        .replace(/[\u0300-\u036f]/g, "")
+
+        // Lettres spéciales de translittération
+        .replace(/ʿ/g, "")
+        .replace(/ʾ/g, "")
+
+        // Supprime tous les caractères non ASCII
+        .replace(/[^\x00-\x7F]/g, "");
+
 }
 
-// Accueil
+
+
+/*
+    Page test
+*/
+
 app.get("/", (req, res) => {
 
     res.json({
+
         status: "Hijri Calendar running"
+
     });
 
 });
 
 
-// Installation LaMetric
-app.post("/install", (req, res) => {
 
-    const data = req.body;
+/*
+    Installation LaMetric
+*/
+
+app.post("/install", (req, res) => {
 
 
     let users = [];
 
+
     if (fs.existsSync(USERS_FILE)) {
+
         users = JSON.parse(
             fs.readFileSync(USERS_FILE)
         );
+
     }
 
 
-    const user = {
 
-        device_id: data.id || "unknown",
+    users.push({
+
+        device_id: req.body.id,
 
         installed_at: new Date().toISOString()
 
-    };
+    });
 
-
-    users.push(user);
 
 
     fs.writeFileSync(
+
         USERS_FILE,
+
         JSON.stringify(users, null, 2)
+
     );
+
 
 
     res.json({
@@ -75,69 +108,24 @@ app.post("/install", (req, res) => {
 
     });
 
-});
-
-
-
-// Données Hijri
-app.get("/hijri", async (req,res)=>{
-
-
-    try {
-
-
-        const response = await axios.get(
-            "https://api.aladhan.com/v1/gToH"
-        );
-
-
-        const hijri = response.data.data.hijri;
-
-        const month = normalizeText (
-            hijri.month.en
-        );
-
-
-        res.json({
-
-            frames:[
-
-                {
-                    icon:"18433",
-                    text:
-                    `${hijri.day} ${hijri.month.en}`
-                },
-
-                {
-                    icon:"18433",
-                    text:
-                    `${hijri.year}`
-                }
-
-            ]
-
-        });
-
-
-    }
-    catch(error){
-
-        res.status(500).json({
-            error:"Hijri API error"
-        });
-
-    }
-
 
 });
 
-app.post("/uninstall", (req,res)=>{
 
-    const data = req.body;
+
+
+
+/*
+    Désinstallation LaMetric
+*/
+
+app.post("/uninstall", (req, res) => {
+
 
     let users = [];
 
-    if(fs.existsSync(USERS_FILE)){
+
+    if (fs.existsSync(USERS_FILE)) {
 
         users = JSON.parse(
             fs.readFileSync(USERS_FILE)
@@ -146,27 +134,127 @@ app.post("/uninstall", (req,res)=>{
     }
 
 
+
     users = users.filter(
-        user => user.device_id !== data.id
+
+        user => user.device_id !== req.body.id
+
     );
+
 
 
     fs.writeFileSync(
+
         USERS_FILE,
-        JSON.stringify(users,null,2)
+
+        JSON.stringify(users, null, 2)
+
     );
+
 
 
     res.json({
-        success:true
+
+        success: true
+
     });
+
 
 });
 
-app.listen(PORT,()=>{
+
+
+
+
+
+
+/*
+    Endpoint LaMetric
+*/
+
+app.get("/hijri", async (req, res) => {
+
+
+    try {
+
+
+        const response = await axios.get(
+
+            "https://api.aladhan.com/v1/gToH"
+
+        );
+
+
+
+        const hijri = response.data.data.hijri;
+
+
+
+        const cleanMonth = normalizeText(
+
+            hijri.month.en
+
+        );
+
+
+
+        res.json({
+
+            frames: [
+
+                {
+
+                    icon: "18433",
+
+                    text:
+                    `${hijri.day} ${cleanMonth}`
+
+                },
+                {
+
+                    icon: "18433",
+
+                    text:
+                    `n${hijri.year} AH`
+
+                }
+
+            ]
+
+        });
+
+
+
+    } catch (error) {
+
+
+        console.log(error);
+
+
+        res.status(500).json({
+
+            error: "Hijri API error"
+
+        });
+
+
+    }
+
+
+});
+
+
+
+
+
+app.listen(PORT, () => {
+
 
     console.log(
-        `Hijri Calendar running on ${PORT}`
+
+        `Hijri Calendar running on port ${PORT}`
+
     );
+
 
 });
