@@ -215,7 +215,7 @@ app.get("/hijri", async (req, res) => {
                     icon: "18433",
 
                     text:
-                    `n${hijri.year} AH`
+                    `${hijri.year} AH`
 
                 }
 
