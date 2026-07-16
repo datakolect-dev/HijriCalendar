@@ -1,0 +1,40 @@
+{
+  "packageName": "com.hijricalendar.app",
+  "name": "Hijri Calendar",
+  "version": "1.0.0",
+  "author": "Aymen",
+  "description": "Simple Hijri calendar display for LaMetric Time",
+
+  "homepage": "https://hijri-calendar.onrender.com",
+
+  "app": {
+    "fields": [
+      {
+        "name": "city",
+        "type": "text",
+        "default": ""
+      }
+    ]
+  },
+
+  "screens": {
+    "widget": {
+      "cycles": [
+        {
+          "frames": [
+            {
+              "icon": "6063",
+              "text": "{date}"
+            }
+          ]
+        }
+      ]
+    }
+  },
+
+  "installUrl": "https://hijri-calendar.onrender.com/install",
+
+  "uninstallUrl": "https://hijri-calendar.onrender.com/uninstall",
+
+  "url": "https://hijri-calendar.onrender.com/hijri"
+}
